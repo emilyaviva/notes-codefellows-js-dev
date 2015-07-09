@@ -166,3 +166,9 @@ We could add a default to add in both of these tasks:
 ```javascript
 gulp.task('default'), ['test', 'lint'], function() {});
 ```
+Let's add a watcher to test and lint some particular file whenever we modify it:
+```javascript
+gulp.task('watch', function() {
+  gulp.watch('somefile.js', ['test', 'lint']);
+});
+```
