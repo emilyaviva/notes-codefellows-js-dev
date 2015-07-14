@@ -116,7 +116,7 @@ When testing these servers, a logical way to set it out, is: for a given endpoin
 ```javascript
 var chai = require('chai');
 var chaiHttp = require('chai-http');
-var expect = chai.respect;
+var expect = chai.expect;
 
 chai.use(chaiHttp);
 
