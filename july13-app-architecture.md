@@ -52,6 +52,8 @@ If done RESTfully:
 The underlying protocol of the Internet is called IP (Internet Protocol), which runs over TCP (Transfer Connect Protocol). An HTTP server is therefore also a TCP/IP server. Node allows us to create these at the most basic level (TCP only), HTTP (over TCP/IP), and with something friendly like ExpressJS.
 
 ### Basic TCP server
+[A resource for the implementation of TCP servers in Node](http://www.hacksparrow.com/tcp-socket-programming-in-node-js.html)
+
 TCP works through the Node built-in `net` module. Here's a basic TCP server:
 ```javascript
 var net = require('net');
