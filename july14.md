@@ -60,13 +60,16 @@ function append(listOne, data, listTwoStart, listTwoCurr) {
   }
 }
 ```
-Another solution, the more "computer science-y" version, would be to create a helper function (and we'll use the mañana principle to avoid actually coding it):
+Another solution, the more "computer science-y" version, would be to create a helper function. This also helps us to create an immutable function.
 ```javascript
-function copy() {
-  // code here to copy the list to a new object
-}
-function append(list, data) {
-  listTwo = copy(listOne);
-  // append the new node to listTwo
+function copy(list) {
+  function copy_helper(next, copy) {
+    if (!next) return;
+    copy.next = {data: next.data, next: null};
+    copy_helper(next.next, copy.next);
+  }
+  var copy = {data: list.data, next: null};
+  copy_helper(list.next, copy);
+  return copy;
 }
 ```
