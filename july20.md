@@ -1,5 +1,5 @@
 # 20 July 2015
-## Middleware and Asynchronous Looping
+## Middleware
 
 Let's create a basic server with a basic route, saving new files into a new `saved` directory:
 
@@ -170,3 +170,81 @@ app.get('/goodbye/:name, greet('goodbye '), endFunc);
 Calling a middleware-constructing function is a really useful tool to make code dry, as well as to enable using the same pattern in routes. 
 This is essentially what `body-parser` does: it's a piece of middleware that performs an incredibly useful task: take JSON out of the body of 
 a request and give it back as an object that's usable and manipulable.
+
+## Asynchronous looping
+Our goal is to do something like this:
+```javascript
+for (var i = 0; i < 10; i++) {
+  console.log(i);
+}
+```
+but *asynchronously*!
+
+When we wrap in `process.nextTick`, we make a synchronous operation asynchronous. It adds the operation (its callback) to the event loop, and 
+runs it when 
+the event loop is done.
+```javascript
+for (var i = 0; i < 10; i++) {
+  process.nextTick(function() {
+    console.log(i);
+  });
+}
+```
+If we run this, it will print `10` ten times! Why? Because by the time the callback finishes, `i` (which, remember, is scoped to the callback 
+function!) equals 10, since `i++` is getting run every time we run through the loop.
+
+The way we can fix this is by wrapping it in a *closure*, which is a function plus its scope:
+```javascript
+for (var i = 0; i < 10; i++) {
+  (function(num) {
+    process.nextTick(function() {
+      console.log(num);
+    });
+  })(i);
+}
+```
+This pattern is an *IFFE* (immediately invoked function expression). We are immediately passing `i` into the function here. We could also 
+have done this as
+```javascript
+var loop = function(num) { ... }
+loop(i);
+```
+but that allocates somewhat more memory.
+
+We could do something similar with `forEach`, or we could do it recursively:
+```javascript
+var recurse = function (num, end, callback) {;
+  if (num >= end) return;
+  process.nextTick(function() {
+    callback(num);
+  });
+  recurse(num + 1, end, callback);
+};
+```
+This calls the `recurse` function again with an incremented parameter, after the callback has been run.
+```javascript
+recurse(0, 10, function(num) {
+  console.log(num);
+});
+```
+We can do some weird stuff if we wrap the recurse function in a `process.nextTick` to make it asynchronous, so we can run two loops 
+simultaneously:
+```javascript
+var recurse = function(num, end, callback) {
+  if (num >= end) return;
+  process.nextTick(function() {callback(num)});
+  process.nextTick(function() {recurse(num + 1, end, callback)});
+};
+
+recurse(0, 10, function(num) {
+  console.log('loop 1: ' + num);
+});
+
+recurse(0, 10, function(num) {
+  console.log('loop 2: ' + num);
+});
+```
+This will do "loop 1: 0, loop 2: 0, loop 1: 1, loop 2: 1, loop 3: 1, loop 3: 1", etc. This would work the same if we set one loop to go up to 
+15. Why? Because we've wrapped both the callback and the recurse functions in `process.nextTick`, it will execute all synchronous code (so we 
+get to the second recurse function before we get to the first `nextTick`), and *then* start doing our items from the event queue, which our 
+loops are putting extra things on, in sequence.
