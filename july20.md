@@ -88,7 +88,7 @@ In order to execute the next piece of middleware, you need to explicitly call th
 ```javascript
 var app = require('express')();
 
-app.get('/middlware', function(req, res, next) {
+app.get('/middleware', function(req, res, next) {
 
 }, function(req, res) {
   res.send('wow, so middleware, such processing');
@@ -127,6 +127,7 @@ var middleware2 = function(req, res, next) {
 app.get('/middleware', middleware, middleware2 function(req, res) {
   // stuff here
 });
+```
 This defines the middleware operations outside of the actual route. This lets us modularize them and reuse them.
 
 Express's `.use()` function says, "Place this function at the beginning of the middleware chain for every single route that comes *after* 
